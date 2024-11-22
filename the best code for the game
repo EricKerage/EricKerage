@@ -1,0 +1,92 @@
+import tkinter as tk
+from tkinter import messagebox
+
+
+class TicTacToe:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Tic-Tac-Toe")
+        self.turn = "X"  # Player X starts
+        self.board = [""] * 9  # Empty board to track moves
+        self.buttons = []  # Store button widgets
+        self.create_widgets()
+        self.game_active = True  # Flag to track if the game is active
+
+    def create_widgets(self):
+        # Create a 3x3 grid of buttons for the game
+        for i in range(9):
+            button = tk.Button(
+                self.root,
+                text="",
+                font=("Arial", 24),
+                width=5,
+                height=2,
+                bg="white",
+                command=lambda idx=i: self.make_move(idx)
+            )
+            button.grid(row=i // 3, column=i % 3)
+            self.buttons.append(button)
+
+        # Add a reset button
+        reset_button = tk.Button(
+            self.root,
+            text="Reset Game",
+            font=("Arial", 16),
+            bg="lightblue",
+            command=self.reset_game
+        )
+        reset_button.grid(row=3, column=0, columnspan=3, sticky="nsew")
+
+    def make_move(self, idx):
+        # Handle a player's move
+        if self.board[idx] == "" and self.game_active:  # Ensure valid move and game is active
+            self.board[idx] = self.turn
+            self.buttons[idx].config(text=self.turn, fg="blue" if self.turn == "X" else "red")
+
+            # Check if the game has a winner or is a draw
+            if self.check_winner():
+                self.highlight_winner()
+                messagebox.showinfo("Game Over", f"Player {self.turn} wins!")
+                self.game_active = False  # Stop further moves
+            elif "" not in self.board:  # Check for a draw
+                messagebox.showinfo("Game Over", "It's a draw!")
+                self.game_active = False
+            else:
+                # Switch turn to the other player
+                self.turn = "O" if self.turn == "X" else "X"
+
+    def check_winner(self):
+        # Define winning combinations
+        self.winning_combo = None
+        win_conditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Columns
+            [0, 4, 8], [2, 4, 6]             # Diagonals
+        ]
+        # Check if any winning combination is satisfied
+        for condition in win_conditions:
+            if (self.board[condition[0]] == self.board[condition[1]] ==
+                    self.board[condition[2]] != ""):
+                self.winning_combo = condition
+                return True
+        return False
+
+    def highlight_winner(self):
+        # Highlight the winning buttons
+        for idx in self.winning_combo:
+            self.buttons[idx].config(bg="lightgreen")
+
+    def reset_game(self):
+        # Reset the game state to start a new game
+        self.turn = "X"
+        self.board = [""] * 9
+        self.game_active = True
+        for button in self.buttons:
+            button.config(text="", bg="white", state=tk.NORMAL)
+
+
+# Run the application
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = TicTacToe(root)
+    root.mainloop()
